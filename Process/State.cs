@@ -4,6 +4,8 @@ public sealed class State : IComparable<State>
 {
     private readonly bool[] values;
 
+    public int numValues { get { return values.Length; } }
+
     public State(int numValues)
     {
         this.values = new bool[numValues];
@@ -26,7 +28,7 @@ public sealed class State : IComparable<State>
 
     public int CompareTo(State other)
     {
-        for (int i = 0; i < values.Length; i++)
+        for (int i = 0; i < numValues; i++)
         {
             var a = values[i];
             var b = other.values[i];

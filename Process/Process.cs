@@ -25,7 +25,7 @@ public sealed class Process
         transitions.Add(tb);
     }
 
-    public TransitionSystem BuildTransitionSystem(int numVariables, int initialNode, int finalNode, out IProposition initial, out IProposition final)
+    public TransitionSystem BuildTransitionSystem(int numVariables, int initialNode, int finalNode, out IProposition initial, out IProposition final, out IProposition[] propositions)
     {
         var steps = new List<Step>();
         var initialState = new State(numVariables);
@@ -34,8 +34,14 @@ public sealed class Process
         var numSteps = steps.Count;
         var ts = new TransitionSystem(numSteps);
 
+        var ps = new Proposition[numVariables + 1];
+        for (int i = 0; i < numVariables; i++)
+        {
+            ps[i] = new Proposition(numSteps, $"{i}");
+        }
+
         var addedSteps = new List<Step>();
-        AddSteps(ts, initialStep, addedSteps);
+        AddSteps(ts, ps, initialStep, addedSteps);
 
         var pi = new Proposition(numSteps, "initial");
         pi.Set(initialStep.id);
@@ -46,14 +52,16 @@ public sealed class Process
             if (step.node != finalNode) continue;
             pf.Set(step.id);
         }
+        ps[numVariables] = pf;
 
         initial = pi;
         final = pf;
+        propositions = ps;
 
         return ts;
     }
 
-    private void AddSteps(TransitionSystem transitionSystem, Step step, List<Step> addedSteps)
+    private void AddSteps(TransitionSystem transitionSystem, Proposition[] propositions, Step step, List<Step> addedSteps)
     {
         if (FindStep(step.node, step.state, addedSteps) != null)
         {
@@ -62,10 +70,19 @@ public sealed class Process
         }
         addedSteps.Add(step);
 
+        var state = step.state;
+        for (int i = 0; i < state.numValues; i++)
+        {
+            if (state.Get(i))
+            {
+                propositions[i].Set(step.id);
+            }
+        }
+
         foreach (var nextStep in step.successors)
         {
             transitionSystem.AddTransition(step.id, nextStep.id);
-            AddSteps(transitionSystem, nextStep, addedSteps);
+            AddSteps(transitionSystem, propositions, nextStep, addedSteps);
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 
 public sealed class TransitionSystem
 {
@@ -21,12 +22,15 @@ public sealed class TransitionSystem
         return transitions[sourceNode, targetNode];
     }
 
-    public void ExportToGraphviz(TextWriter writer)
+    public void ExportToGraphviz(TextWriter writer, IProposition[] propositions)
     {
         writer.WriteLine("digraph G {");
 
         for (int i = 0; i < numNodes; i++)
         {
+            var label = string.Join(", ", propositions.Where(p => p.Get(i)));
+            writer.WriteLine($"n{i} [label=\"{label}\"];");
+
             for (int j = 0; j < numNodes; j++)
             {
                 if (HasTransition(i, j))

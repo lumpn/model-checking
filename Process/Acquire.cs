@@ -10,7 +10,7 @@
 
     public State Execute(State state)
     {
-        if (state.Get(acquiredId)) return state; // already acquired
+        if (state.Get(acquiredId)) return null; // already acquired
         if (state.Get(itemId)) return null; // item already present
 
         var nextState = new State(state);
