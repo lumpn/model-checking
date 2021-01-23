@@ -1,15 +1,22 @@
-﻿internal class OrProposition
+﻿public sealed class OrProposition : IProposition
 {
-    private int numNodes;
-    private string v;
-    private Proposition s;
-    private Proposition w;
+    private readonly Proposition a, b;
 
-    public OrProposition(int numNodes, string v, Proposition s, Proposition w)
+    public OrProposition(Proposition a, Proposition b)
     {
-        this.numNodes = numNodes;
-        this.v = v;
-        this.s = s;
-        this.w = w;
+        this.a = a;
+        this.b = b;
+    }
+
+    public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
+    {
+        var resultA = a.Evaluate(transitionSystem, initialStates);
+        var resultB = b.Evaluate(transitionSystem, initialStates);
+        return (resultA || resultB);
+    }
+
+    public override string ToString()
+    {
+        return $"{a} || {b}";
     }
 }
