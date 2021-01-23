@@ -1,6 +1,4 @@
-﻿using System;
-
-public sealed class ExistsGlobalProposition : IProposition
+﻿public sealed class ExistsGlobalProposition : IProposition
 {
     private readonly IProposition f;
     private readonly bool[] values;
@@ -41,42 +39,46 @@ public sealed class ExistsGlobalProposition : IProposition
         }
     }
 
-    private bool Evaluate(TransitionSystem transitionSystem, bool[] checkedNodes, bool[] markedNodes, int s)
+    private bool Evaluate(TransitionSystem transitionSystem, bool[] checkedNodes, bool[] markedNodes, int node)
     {
-        if (!checkedNodes[s])
+        if (checkedNodes[node])
         {
-            if (markedNodes[s])
-            {
-                // DFS has reached a marked node
-                // therefore detecting an infinite cycle
-                // along which f holds
-                return true;
-            }
-
-            if (f.Get(s))
-            {
-                markedNodes[s] = true;
-                for (int s2 = 0; s2 < numNodes; s2++)
-                {
-                    if (transitionSystem.HasTransition(s, s2))
-                    {
-                        if (Evaluate(transitionSystem, checkedNodes, markedNodes, s2))
-                        {
-                            // found an infinite cycle along which f holds
-                            // therefore it also holds in the starting node
-                            Set(s);
-                            checkedNodes[s] = true;
-                            return true;
-                        }
-                    }
-                }
-                markedNodes[s] = false;
-            }
-            checkedNodes[s] = true;
+            // we have already evaluated this node
+            return Get(node);
         }
 
-        // we have already computed the result for this node
-        return Get(s);
+        if (markedNodes[node])
+        {
+            // we have reached a previously marked node
+            // therefore detecting a cycle along which f holds
+            return true;
+        }
+
+        if (f.Get(node))
+        {
+            // proposition does not hold here
+            return false;
+        }
+
+        // check if there is a path starting in the current along which f holds for every node
+        markedNodes[node] = true;
+        for (int i = 0; i < numNodes; i++)
+        {
+            if (transitionSystem.HasTransition(node, i))
+            {
+                if (Evaluate(transitionSystem, checkedNodes, markedNodes, i))
+                {
+                    // found a path along which f holds for every node
+                    // therefore prepend the current node
+                    Set(node);
+                    break;
+                }
+            }
+        }
+        markedNodes[node] = false;
+        checkedNodes[node] = true;
+
+        return Get(node);
     }
 
     public override string ToString()
