@@ -1,12 +1,14 @@
 ﻿public sealed class ExistsUntilProposition : IProposition
 {
-    private readonly IProposition before, after;
+    private readonly IProposition f, g;
     private readonly bool[] values;
 
-    public ExistsUntilProposition(int numNodes, IProposition before, IProposition after)
+    private int numNodes { get { return values.Length; } }
+
+    public ExistsUntilProposition(int numNodes, IProposition f, IProposition g)
     {
-        this.before = before;
-        this.after = after;
+        this.f = f;
+        this.g = g;
         this.values = new bool[numNodes];
     }
 
@@ -24,46 +26,23 @@
     public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
     {
         Evaluate(transitionSystem);
-
-        var numNodes = values.Length;
-        for (int i = 0; i < numNodes; i++)
-        {
-            if (initialStates.Get(i) && !Get(i))
-            {
-                // i is an initial state but the
-                // proposition does not hold in i
-                return false;
-            }
-        }
-        return true;
+        return PropositionUtils.Evaluate(values.Length, this, initialStates);
     }
 
     private void Evaluate(TransitionSystem transitionSystem)
     {
-        var numNodes = values.Length;
         for (int i = 0; i < numNodes; i++)
         {
-            if (after.Get(i))
+            if (g.Get(i))
             {
                 Set(i);
-                for (int j = 0; j < numNodes; j++)
-                {
-                    if (transitionSystem.HasTransition(j, i))
-                    {
-                        Evaluate(transitionSystem, j);
-                    }
-                }
+                EvaluatePredecessors(transitionSystem, i);
             }
         }
     }
 
-    private void Evaluate(TransitionSystem transitionSystem, int node)
+    private void EvaluatePredecessors(TransitionSystem transitionSystem, int node)
     {
-        if (Get(node)) return; // already labeled
-        if (!before.Get(node)) return; // before does not hold
-
-        Set(node); // apply label
-
         for (int i = 0; i < numNodes; i++)
         {
             if (transitionSystem.HasTransition(i, node))
@@ -73,8 +52,17 @@
         }
     }
 
+    private void Evaluate(TransitionSystem transitionSystem, int node)
+    {
+        if (Get(node)) return; // already labeled
+        if (!f.Get(node)) return; // f does not hold
+
+        Set(node); // apply label
+        EvaluatePredecessors(transitionSystem, node);
+    }
+
     public override string ToString()
     {
-        return $"E[{before} U {after}]";
+        return $"E[{f} U {g}]";
     }
 }

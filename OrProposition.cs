@@ -1,22 +1,29 @@
 ﻿public sealed class OrProposition : IProposition
 {
-    private readonly Proposition a, b;
+    private readonly Proposition f, g;
 
-    public OrProposition(Proposition a, Proposition b)
+    public OrProposition(Proposition f, Proposition g)
     {
-        this.a = a;
-        this.b = b;
+        this.f = f;
+        this.g = g;
+    }
+
+    public bool Get(int node)
+    {
+        var a = f.Get(node);
+        var b = g.Get(node);
+        return (a || b);
     }
 
     public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
     {
-        var resultA = a.Evaluate(transitionSystem, initialStates);
-        var resultB = b.Evaluate(transitionSystem, initialStates);
-        return (resultA || resultB);
+        var a = f.Evaluate(transitionSystem, initialStates);
+        var b = g.Evaluate(transitionSystem, initialStates);
+        return (a || b);
     }
 
     public override string ToString()
     {
-        return $"{a} || {b}";
+        return $"{f} || {g}";
     }
 }

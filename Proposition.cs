@@ -1,12 +1,34 @@
-﻿public sealed class Proposition : PropositionBase
+﻿public sealed class Proposition : IProposition
 {
+    private readonly string name;
+    private readonly bool[] values;
+
     public Proposition(int numNodes, string name)
-        : base(numNodes, name)
     {
+        this.name = name;
+        this.values = new bool[numNodes];
     }
 
-    public override bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
+    public void Set(params int[] nodes)
     {
-        return PropositionUtils.Evaluate(Values.Length, this, initialStates);
+        foreach (var node in nodes)
+        {
+            values[node] = true;
+        }
+    }
+
+    public bool Get(int node)
+    {
+        return values[node];
+    }
+
+    public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
+    {
+        return PropositionUtils.Evaluate(values.Length, this, initialStates);
+    }
+
+    public override string ToString()
+    {
+        return name;
     }
 }

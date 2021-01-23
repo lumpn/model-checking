@@ -1,21 +1,29 @@
 ﻿public sealed class ExistsFutureProposition : IProposition
 {
-    private readonly Proposition inner;
+    private readonly int numNodes;
+    private readonly IProposition f, existsUntil;
 
-    public ExistsFutureProposition(Proposition inner)
+    public ExistsFutureProposition(int numNodes, Proposition f)
     {
-        this.inner = inner;
+        this.numNodes = numNodes;
+        this.f = f;
+
+        // EF(f) === E[true U f]
+        this.existsUntil = new ExistsUntilProposition(numNodes, TrueProposition.Instance, f);
+    }
+
+    public bool Get(int node)
+    {
+        return existsUntil.Get(node);
     }
 
     public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
     {
-        // EF(f) === E[true U f]
-        var eu = new ExistsUntilProposition(TrueProposition.Instance, inner);
-        return eu.Evaluate(transitionSystem, initialStates);
+        return existsUntil.Evaluate(transitionSystem, initialStates);
     }
 
     public override string ToString()
     {
-        return $"EF({inner})";
+        return $"EF({f})";
     }
 }

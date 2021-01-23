@@ -1,19 +1,24 @@
 ﻿public sealed class NotProposition : IProposition
 {
-    private readonly Proposition inner;
+    private readonly Proposition f;
 
-    public NotProposition(Proposition inner)
+    public NotProposition(Proposition f)
     {
-        this.inner = inner;
+        this.f = f;
+    }
+
+    public bool Get(int node)
+    {
+        return !f.Get(node);
     }
 
     public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
     {
-        return !inner.Evaluate(transitionSystem, initialStates);
+        return !f.Evaluate(transitionSystem, initialStates);
     }
 
     public override string ToString()
     {
-        return $"!{inner}";
+        return $"!{f}";
     }
 }
