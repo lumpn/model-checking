@@ -3,7 +3,7 @@ using System.Linq;
 
 public sealed class TransitionSystem
 {
-    private readonly int numNodes;
+    public readonly int numNodes;
     private readonly bool[,] transitions;
 
     public TransitionSystem(int numNodes)

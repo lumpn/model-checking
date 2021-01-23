@@ -31,22 +31,21 @@ public sealed class Process
         var initialState = new State(numVariables);
         var initialStep = Crawl(initialNode, initialState, steps);
 
-        var numSteps = steps.Count;
-        var ts = new TransitionSystem(numSteps);
+        var ts = new TransitionSystem(steps.Count);
 
         var ps = new Proposition[numVariables + 1];
         for (int i = 0; i < numVariables; i++)
         {
-            ps[i] = new Proposition(numSteps, $"{i}");
+            ps[i] = new Proposition(ts.numNodes, $"{i}");
         }
 
         var addedSteps = new List<Step>();
         AddSteps(ts, ps, initialStep, addedSteps);
 
-        var pi = new Proposition(numSteps, "initial");
+        var pi = new Proposition(ts.numNodes, "initial");
         pi.Set(initialStep.id);
 
-        var pf = new Proposition(numSteps, "final");
+        var pf = new Proposition(ts.numNodes, "final");
         foreach (var step in steps)
         {
             if (step.node != finalNode) continue;
