@@ -1,4 +1,6 @@
-﻿public sealed class State
+﻿using System;
+
+public sealed class State : IComparable<State>
 {
     private readonly bool[] values;
 
@@ -20,5 +22,17 @@
     public void Set(int id, bool value)
     {
         values[id] = value;
+    }
+
+    public int CompareTo(State other)
+    {
+        for (int i = 0; i < values.Length; i++)
+        {
+            var a = values[i];
+            var b = other.values[i];
+            var cmp = a.CompareTo(b);
+            if (cmp != 0) return cmp;
+        }
+        return 0;
     }
 }

@@ -60,10 +60,10 @@ public sealed class Process
             // already added
             return;
         }
+        addedSteps.Add(step);
 
         foreach (var nextStep in step.successors)
         {
-            addedSteps.Add(nextStep);
             transitionSystem.AddTransition(step.id, nextStep.id);
             AddSteps(transitionSystem, nextStep, addedSteps);
         }
@@ -99,7 +99,7 @@ public sealed class Process
         foreach (var step in steps)
         {
             if (step.node != node) continue;
-            if (step.state != state) continue;
+            if (step.state.CompareTo(state) != 0) continue;
             return step;
         }
         return null;

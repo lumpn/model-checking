@@ -5,7 +5,7 @@ public sealed class Lookup
     private readonly Dictionary<string, int> identifiers = new Dictionary<string, int>();
     private int serial;
 
-    public int numIdentifiers { get { return identifiers.Count; } }
+    public int numVariables { get { return serial; } }
 
     public int Resolve(string identifier)
     {
@@ -21,5 +21,10 @@ public sealed class Lookup
     public int ResolveUnique()
     {
         return serial++;
+    }
+
+    public override string ToString()
+    {
+        return $"({identifiers.Count}, {serial})";
     }
 }
