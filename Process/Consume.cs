@@ -19,4 +19,9 @@
 
         return nextState;
     }
+
+    public override string ToString()
+    {
+        return $"-{itemId}";
+    }
 }

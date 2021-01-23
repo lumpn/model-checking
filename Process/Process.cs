@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 
 public sealed class Process
 {
@@ -24,18 +25,53 @@ public sealed class Process
         transitions.Add(tb);
     }
 
-    public TransitionSystem BuildTransitionSystem(int initialNode, int finalNode, out IProposition initial, out IProposition final)
+    public TransitionSystem BuildTransitionSystem(int numVariables, int initialNode, int finalNode, out IProposition initial, out IProposition final)
     {
         var steps = new List<Step>();
-        var initialState = new State();
+        var initialState = new State(numVariables);
         var initialStep = Crawl(initialNode, initialState, steps);
+
+        var numSteps = steps.Count;
+        var ts = new TransitionSystem(numSteps);
+
+        var addedSteps = new List<Step>();
+        AddSteps(ts, initialStep, addedSteps);
+
+        var pi = new Proposition(numSteps, "initial");
+        pi.Set(initialStep.id);
+
+        var pf = new Proposition(numSteps, "final");
+        foreach (var step in steps)
+        {
+            if (step.node != finalNode) continue;
+            pf.Set(step.id);
+        }
+
+        initial = pi;
+        final = pf;
 
         return ts;
     }
 
+    private void AddSteps(TransitionSystem transitionSystem, Step step, List<Step> addedSteps)
+    {
+        if (FindStep(step.node, step.state, addedSteps) != null)
+        {
+            // already added
+            return;
+        }
+
+        foreach (var nextStep in step.successors)
+        {
+            addedSteps.Add(nextStep);
+            transitionSystem.AddTransition(step.id, nextStep.id);
+            AddSteps(transitionSystem, nextStep, addedSteps);
+        }
+    }
+
     private Step Crawl(int node, State state, List<Step> steps)
     {
-        var step = new Step(node, state);
+        var step = new Step(steps.Count, node, state);
         steps.Add(step);
 
         foreach (var transition in transitions)
@@ -67,6 +103,18 @@ public sealed class Process
             return step;
         }
         return null;
+    }
+
+    public void ExportToGraphviz(TextWriter writer)
+    {
+        writer.WriteLine("digraph G {");
+
+        foreach (var transition in transitions)
+        {
+            writer.WriteLine($"n{transition.source} -> n{transition.target} [label=\"{transition.script}\"];");
+        }
+
+        writer.WriteLine("}");
     }
 
     public override string ToString()
