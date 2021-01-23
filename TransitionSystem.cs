@@ -18,4 +18,18 @@
     {
         return transitions[sourceNode, targetNode];
     }
+
+    public override string ToString()
+    {
+        int numTransitions = 0;
+        foreach (var transition in transitions)
+        {
+            if (transition)
+            {
+                numTransitions++;
+            }
+        }
+
+        return $"({numNodes}, {numTransitions})";
+    }
 }
