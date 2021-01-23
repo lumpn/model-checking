@@ -2,6 +2,7 @@
 {
     private readonly IProposition f, g;
     private readonly bool[] values;
+    private bool isEvaluated;
 
     private int numNodes { get { return values.Length; } }
 
@@ -14,7 +15,7 @@
 
     public bool Get(int node)
     {
-        // TODO Jonas: make sure this proposition got evaluated
+        if (!isEvaluated) throw new System.InvalidOperationException($"{this} has not been evaluated yet.");
         return values[node];
     }
 
@@ -25,6 +26,7 @@
 
     public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
     {
+        isEvaluated = true;
         Evaluate(transitionSystem);
         return PropositionUtils.Evaluate(numNodes, this, initialStates);
     }
@@ -54,10 +56,19 @@
 
     private void Evaluate(TransitionSystem transitionSystem, int node)
     {
-        if (Get(node)) return; // already labeled
-        if (!f.Get(node)) return; // f does not hold
+        if (Get(node))
+        {
+            // we have already evaluated this node
+            return;
+        }
 
-        Set(node); // apply label
+        if (!f.Get(node))
+        {
+            // f does not hold
+            return;
+        }
+
+        Set(node);
         EvaluatePredecessors(transitionSystem, node);
     }
 

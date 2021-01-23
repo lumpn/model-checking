@@ -2,6 +2,7 @@
 {
     private readonly IProposition f;
     private readonly bool[] values;
+    private bool isEvaluated;
 
     private int numNodes { get { return values.Length; } }
 
@@ -18,12 +19,13 @@
 
     public bool Get(int node)
     {
-        // TODO Jonas: make sure this proposition got evaluated
+        if (!isEvaluated) throw new System.InvalidOperationException($"{this} has not been evaluated yet.");
         return values[node];
     }
 
     public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
     {
+        isEvaluated = true;
         Evaluate(transitionSystem);
         return PropositionUtils.Evaluate(numNodes, this, initialStates);
     }
@@ -54,9 +56,9 @@
             return true;
         }
 
-        if (f.Get(node))
+        if (!f.Get(node))
         {
-            // proposition does not hold here
+            // f does not hold here
             return false;
         }
 
