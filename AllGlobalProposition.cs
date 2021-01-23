@@ -6,6 +6,7 @@
     {
         this.f = f;
 
+        // AG(f) === !EF(!f)
         var notF = new NotProposition(f);
         this.existsFuture = new ExistsFutureProposition(numNodes, notF);
     }

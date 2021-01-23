@@ -26,7 +26,7 @@
     public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
     {
         Evaluate(transitionSystem);
-        return PropositionUtils.Evaluate(values.Length, this, initialStates);
+        return PropositionUtils.Evaluate(numNodes, this, initialStates);
     }
 
     private void Evaluate(TransitionSystem transitionSystem)
