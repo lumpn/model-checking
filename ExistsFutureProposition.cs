@@ -3,7 +3,7 @@
     private readonly int numNodes;
     private readonly IProposition f, existsUntil;
 
-    public ExistsFutureProposition(int numNodes, Proposition f)
+    public ExistsFutureProposition(int numNodes, IProposition f)
     {
         this.numNodes = numNodes;
         this.f = f;

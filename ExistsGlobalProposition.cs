@@ -1,13 +1,23 @@
-﻿internal class ExistsGlobalProposition
+﻿public sealed class ExistsGlobalProposition : IProposition
 {
-    private int numNodes;
-    private string v;
-    private AndProposition and;
+    private readonly IProposition f;
+    private readonly bool[] values;
 
-    public ExistsGlobalProposition(int numNodes, string v, AndProposition and)
+    public ExistsGlobalProposition(int numNodes, AndProposition f)
     {
-        this.numNodes = numNodes;
-        this.v = v;
-        this.and = and;
+        this.f = f;
+        this.values = new bool[numNodes];
+    }
+
+    public bool Get(int node)
+    {
+        // TODO Jonas: make sure this proposition got evaluated
+        return values[node];
+    }
+
+    public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
+    {
+        // TODO Jonas: implement
+        return false;
     }
 }

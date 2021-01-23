@@ -1,8 +1,8 @@
 ﻿public sealed class NotProposition : IProposition
 {
-    private readonly Proposition f;
+    private readonly IProposition f;
 
-    public NotProposition(Proposition f)
+    public NotProposition(IProposition f)
     {
         this.f = f;
     }

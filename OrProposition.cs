@@ -1,8 +1,8 @@
 ﻿public sealed class OrProposition : IProposition
 {
-    private readonly Proposition f, g;
+    private readonly IProposition f, g;
 
-    public OrProposition(Proposition f, Proposition g)
+    public OrProposition(IProposition f, IProposition g)
     {
         this.f = f;
         this.g = g;

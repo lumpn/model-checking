@@ -1,8 +1,8 @@
 ﻿public sealed class AndProposition : IProposition
 {
-    private readonly Proposition f, g;
+    private readonly IProposition f, g;
 
-    public AndProposition(Proposition f, Proposition g)
+    public AndProposition(IProposition f, IProposition g)
     {
         this.f = f;
         this.g = g;

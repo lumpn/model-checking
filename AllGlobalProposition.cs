@@ -1,13 +1,27 @@
-﻿internal class AllGlobalProposition
+﻿public sealed class AllGlobalProposition : IProposition
 {
-    private readonly int numNodes;
-    private readonly string name;
-    private OrProposition or2;
+    private readonly IProposition existsFuture, f;
 
-    public AllGlobalProposition(int numNodes, string v, OrProposition or2)
+    public AllGlobalProposition(int numNodes, IProposition f)
     {
-        this.numNodes = numNodes;
-        this.v = v;
-        this.or2 = or2;
+        this.f = f;
+
+        var notF = new NotProposition(f);
+        this.existsFuture = new ExistsFutureProposition(numNodes, notF);
+    }
+
+    public bool Get(int node)
+    {
+        return !existsFuture.Get(node);
+    }
+
+    public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
+    {
+        return !existsFuture.Evaluate(transitionSystem, initialStates);
+    }
+
+    public override string ToString()
+    {
+        return $"AG({f})";
     }
 }
