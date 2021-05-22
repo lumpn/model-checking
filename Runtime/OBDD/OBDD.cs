@@ -1,37 +1,86 @@
 using System;
+using System.Collections.Generic;
 
-public static class OBDD
+public sealed class OBDD
 {
-    public static BDDNode IfThenElse(BDDNode i, BDDNode t, BDDNode e)
+    private readonly List<BDDNode> nodes = new List<BDDNode>();
+
+    public BDDNode MakeNode(int index, BDDNode high, BDDNode low)
     {
-        if (i == BDDNode.True) return t;
-        if (i == BDDNode.False) return e;
-        if (t == BDDNode.True && e == BDDNode.False) return i;
-        if (t.Equals(e)) return t;
+        // node already exists?
+        // TODO Jonas: this is supposed to be an O(1) hash lookup
+        var newNode = new BDDNode(index, high, low);
+        foreach (var node in nodes)
+        {
+            if (node.Equals(newNode))
+            {
+                return node;
+            }
+        }
+
+        // register new node
+        nodes.Add(newNode);
+        return newNode;
+    }
+
+    /// <summary>restricts a BDD by assigning a value to a variable</summary>
+    public BDDNode Restrict(BDDNode node, int variableId, bool variableValue)
+    {
+        if (node.index > variableId)
+        {
+            // our node and all our children do not contain the variable
+            return node;
+        }
+
+        if (node.index < variableId)
+        {
+            // restrict children
+            return MakeNode(node.index, Restrict(node.high, variableId, variableValue), Restrict(node.low, variableId, variableValue));
+        }
+
+        // restrict this node because it matches the variable
+        var branch = variableValue ? node.high : node.low;
+        return Restrict(branch, variableId, variableValue);
+    }
+
+    /// <summary>restricts an if-then-else block</summary>
+    private BDDNode Restrict(BDDNode ifNode, BDDNode thenNode, BDDNode elseNode, int variableId, bool variableValue)
+    {
+        var i = Restrict(ifNode, variableId, variableValue);
+        var t = Restrict(thenNode, variableId, variableValue);
+        var e = Restrict(elseNode, variableId, variableValue);
+        return MakeIfThenElse(i, t, e);
+    }
+
+    public BDDNode MakeIfThenElse(BDDNode ifNode, BDDNode thenNode, BDDNode elseNode)
+    {
+        // handle basic cases
+        if (ifNode == BDDNode.True) return thenNode;
+        if (ifNode == BDDNode.False) return elseNode;
+        if (thenNode == BDDNode.True && elseNode == BDDNode.False) return ifNode;
+        if (thenNode.Equals(elseNode)) return thenNode;
 
         // splitting variable must be the topmost root
-        int splitVar = Math.Min(Math.Min(i.index, t.index), e.index);
-        var ixt = i.Restrict(splitVar, true);
-        var txt = t.Restrict(splitVar, true);
-        var ext = e.Restrict(splitVar, true);
-        var high = IfThenElse(ixt, txt, ext);
+        int splitId = Min(ifNode.index, thenNode.index, elseNode.index);
 
-        var ixf = i.Restrict(splitVar, false);
-        var txf = t.Restrict(splitVar, false);
-        var exf = e.Restrict(splitVar, false);
-        var low = IfThenElse(ixf, txf, exf);
-
-        var result = BDDNode.MakeNode(splitVar, high, low);
-        return result;
+        // create restricted nodes for both cases
+        var high = Restrict(ifNode, thenNode, elseNode, splitId, true);
+        var low = Restrict(ifNode, thenNode, elseNode, splitId, false);
+        return MakeNode(splitId, high, low);
     }
 
-    public static BDDNode And(BDDNode a, BDDNode b)
+    public BDDNode MakeAnd(BDDNode a, BDDNode b)
     {
-        return IfThenElse(a, b, BDDNode.False);
+        return MakeIfThenElse(a, b, BDDNode.False);
     }
 
-    public static BDDNode Or(BDDNode a, BDDNode b)
+    public BDDNode MakeOr(BDDNode a, BDDNode b)
     {
-        return IfThenElse(a, BDDNode.True, b);
+        return MakeIfThenElse(a, BDDNode.True, b);
+    }
+
+    private static int Min(int a, int b, int c)
+    {
+        return Math.Min(Math.Min(a, b), c);
     }
 }
