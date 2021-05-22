@@ -3,28 +3,29 @@
     private readonly string name;
     private readonly bool[] values;
 
-    public Proposition(int numNodes, string name)
+    public Proposition(int numStates, string name)
     {
         this.name = name;
-        this.values = new bool[numNodes];
+        this.values = new bool[numStates];
     }
 
-    public void Set(params int[] nodes)
+    /// <summary>set states in which the proposition holds</summary>
+    public void Set(params int[] states)
     {
-        foreach (var node in nodes)
+        foreach (var state in states)
         {
-            values[node] = true;
+            values[state] = true;
         }
     }
 
-    public bool Get(int node)
+    public bool Get(int state)
     {
-        return values[node];
+        return values[state];
     }
 
-    public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
+    public bool Evaluate(TransitionSystem transitionSystem, int[] initialStates)
     {
-        return PropositionUtils.Evaluate(values.Length, this, initialStates);
+        return PropositionUtils.Evaluate(this, initialStates);
     }
 
     public override string ToString()

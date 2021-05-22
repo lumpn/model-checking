@@ -2,21 +2,21 @@
 {
     private readonly IProposition existsFuture, f;
 
-    public AllGlobalProposition(int numNodes, IProposition f)
+    public AllGlobalProposition(int numStates, IProposition f)
     {
         this.f = f;
 
         // AG(f) === !EF(!f)
         var notF = new NotProposition(f);
-        this.existsFuture = new ExistsFutureProposition(numNodes, notF);
+        this.existsFuture = new ExistsFutureProposition(numStates, notF);
     }
 
-    public bool Get(int node)
+    public bool Get(int state)
     {
-        return !existsFuture.Get(node);
+        return !existsFuture.Get(state);
     }
 
-    public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
+    public bool Evaluate(TransitionSystem transitionSystem, int[] initialStates)
     {
         return !existsFuture.Evaluate(transitionSystem, initialStates);
     }

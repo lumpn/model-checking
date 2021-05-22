@@ -7,12 +7,12 @@
         this.f = f;
     }
 
-    public bool Get(int node)
+    public bool Get(int state)
     {
-        return !f.Get(node);
+        return !f.Get(state);
     }
 
-    public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
+    public bool Evaluate(TransitionSystem transitionSystem, int[] initialStates)
     {
         return !f.Evaluate(transitionSystem, initialStates);
     }

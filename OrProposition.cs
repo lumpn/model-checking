@@ -8,14 +8,14 @@
         this.g = g;
     }
 
-    public bool Get(int node)
+    public bool Get(int state)
     {
-        var a = f.Get(node);
-        var b = g.Get(node);
+        var a = f.Get(state);
+        var b = g.Get(state);
         return (a || b);
     }
 
-    public bool Evaluate(TransitionSystem transitionSystem, IProposition initialStates)
+    public bool Evaluate(TransitionSystem transitionSystem, int[] initialStates)
     {
         var a = f.Evaluate(transitionSystem, initialStates);
         var b = g.Evaluate(transitionSystem, initialStates);
@@ -24,6 +24,6 @@
 
     public override string ToString()
     {
-        return $"{f} || {g}";
+        return $"({f} || {g})";
     }
 }

@@ -3,39 +3,39 @@ using System.Linq;
 
 public sealed class TransitionSystem
 {
-    public readonly int numNodes;
+    public readonly int numStates;
     private readonly bool[,] transitions;
 
-    public TransitionSystem(int numNodes)
+    public TransitionSystem(int numStates)
     {
-        this.numNodes = numNodes;
-        this.transitions = new bool[numNodes, numNodes];
+        this.numStates = numStates;
+        this.transitions = new bool[numStates, numStates];
     }
 
-    public void AddTransition(int sourceNode, int targetNode)
+    public void AddTransition(int sourceState, int targetState)
     {
-        transitions[sourceNode, targetNode] = true;
+        transitions[sourceState, targetState] = true;
     }
 
-    public bool HasTransition(int sourceNode, int targetNode)
+    public bool HasTransition(int sourceState, int targetState)
     {
-        return transitions[sourceNode, targetNode];
+        return transitions[sourceState, targetState];
     }
 
     public void ExportToGraphviz(TextWriter writer, IProposition[] propositions)
     {
         writer.WriteLine("digraph G {");
 
-        for (int i = 0; i < numNodes; i++)
+        for (int i = 0; i < numStates; i++)
         {
             var label = string.Join(", ", propositions.Where(p => p.Get(i)));
-            writer.WriteLine($"n{i} [label=\"{label}\"];");
+            writer.WriteLine("n{0} [label=\"{1}\"];", i, label);
 
-            for (int j = 0; j < numNodes; j++)
+            for (int j = 0; j < numStates; j++)
             {
                 if (HasTransition(i, j))
                 {
-                    writer.WriteLine($"n{i} -> n{j};");
+                    writer.WriteLine("n{0} -> n{1};", i, j);
                 }
             }
         }
@@ -54,6 +54,6 @@ public sealed class TransitionSystem
             }
         }
 
-        return $"({numNodes}, {numTransitions})";
+        return $"({numStates}, {numTransitions})";
     }
 }

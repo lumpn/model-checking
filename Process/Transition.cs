@@ -1,6 +1,4 @@
-﻿using System;
-
-public class Transition
+﻿public sealed class Transition
 {
     public readonly int source, target;
     public readonly IScript script;

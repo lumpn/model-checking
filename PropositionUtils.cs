@@ -1,16 +1,10 @@
+using System.Linq;
+
 public static class PropositionUtils
 {
-    public static bool Evaluate(int numNodes, IProposition proposition, IProposition initialStates)
+    public static bool Evaluate(IProposition proposition, int[] initialStates)
     {
-        for (int i = 0; i < numNodes; i++)
-        {
-            if (initialStates.Get(i) && !proposition.Get(i))
-            {
-                // i is an initial state but the
-                // proposition does not hold in i
-                return false;
-            }
-        }
-        return true;
+        // proposition holds in all initial state
+        return initialStates.All(proposition.Get);
     }
 }

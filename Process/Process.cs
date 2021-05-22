@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
+/// <summary>a process is a transition system where each transition manipulates state</summary>
 public sealed class Process
 {
     private readonly int numNodes;
@@ -11,12 +13,14 @@ public sealed class Process
         this.numNodes = numNodes;
     }
 
+    /// <summary>adds the script to the node</summary>
     public void AddScript(int node, IScript script)
     {
         var transition = new Transition(node, node, script);
         transitions.Add(transition);
     }
 
+    /// <summary>adds a bidirectional transition between the nodes</summary>
     public void AddTransition(int a, int b, IScript script)
     {
         var ta = new Transition(a, b, script);
@@ -25,48 +29,44 @@ public sealed class Process
         transitions.Add(tb);
     }
 
-    public TransitionSystem BuildTransitionSystem(int numVariables, int initialNode, int finalNode, out IProposition initial, out IProposition final, out IProposition[] propositions)
+    /// <summary>enumerates the state transitions of the process</summary>
+    public TransitionSystem BuildTransitionSystem(string[] variables, int initialNode, int finalNode, out int[] intialStates, out int[] finalStates, out IProposition[] propositions)
     {
+        // crawl
+        var numVariables = variables.Length;
         var steps = new List<Step>();
         var initialState = new State(numVariables);
         var initialStep = Crawl(initialNode, initialState, steps);
 
-        var ts = new TransitionSystem(steps.Count);
-
-        var ps = new Proposition[numVariables + 1];
+        // create transition system and proposition
+        var transitionSystem = new TransitionSystem(steps.Count);
+        var props = new Proposition[numVariables];
         for (int i = 0; i < numVariables; i++)
         {
-            ps[i] = new Proposition(ts.numNodes, $"{i}");
+            props[i] = new Proposition(transitionSystem.numStates, variables[i]);
         }
 
+        // convert steps to state transitions
         var addedSteps = new List<Step>();
-        AddSteps(ts, ps, initialStep, addedSteps);
+        BuildTransitionSystem(transitionSystem, props, initialStep, addedSteps);
 
-        var pi = new Proposition(ts.numNodes, "initial");
-        pi.Set(initialStep.id);
+        // export initial and final states
+        intialStates = new[] { initialStep.id };
+        finalStates = steps.Where(p => p.node == finalNode).Select(p => p.id).ToArray();
+        propositions = props;
 
-        var pf = new Proposition(ts.numNodes, "final");
-        foreach (var step in steps)
-        {
-            if (step.node != finalNode) continue;
-            pf.Set(step.id);
-        }
-        ps[numVariables] = pf;
-
-        initial = pi;
-        final = pf;
-        propositions = ps;
-
-        return ts;
+        return transitionSystem;
     }
 
-    private void AddSteps(TransitionSystem transitionSystem, Proposition[] propositions, Step step, List<Step> addedSteps)
+    /// <summary>adds all steps to the state transition system</summary>
+    private void BuildTransitionSystem(TransitionSystem transitionSystem, Proposition[] propositions, Step step, List<Step> addedSteps)
     {
+        // already added?
         if (FindStep(step.node, step.state, addedSteps) != null)
         {
-            // already added
             return;
         }
+
         addedSteps.Add(step);
 
         var state = step.state;
@@ -74,35 +74,46 @@ public sealed class Process
         {
             if (state.Get(i))
             {
+                // variable i is true in this state
                 propositions[i].Set(step.id);
             }
         }
 
-        foreach (var nextStep in step.successors)
+        // recurse
+        foreach (var nextStep in step.Successors)
         {
             transitionSystem.AddTransition(step.id, nextStep.id);
-            AddSteps(transitionSystem, propositions, nextStep, addedSteps);
+            BuildTransitionSystem(transitionSystem, propositions, nextStep, addedSteps);
         }
     }
 
+    /// <summary>crawls the process starting from the node and state</summary>
     private Step Crawl(int node, State state, List<Step> steps)
     {
+        // already crawled?
+        var existingStep = FindStep(node, state, steps);
+        if (existingStep != null)
+        {
+            return existingStep;
+        }
+
         var step = new Step(steps.Count, node, state);
         steps.Add(step);
 
         foreach (var transition in transitions)
         {
+            // skip irrelevant transitions
             if (transition.source != node) continue;
 
+            // try to execute script
             var nextState = transition.script.Execute(state);
-            if (nextState == null) continue;
-
+            if (nextState == null) continue; // preconditions not met
             var nextNode = transition.target;
-            var nextStep = FindStep(nextNode, nextState, steps);
-            if (nextStep == null)
-            {
-                nextStep = Crawl(nextNode, nextState, steps);
-            }
+
+            // recurse
+            var nextStep = Crawl(nextNode, nextState, steps);
+
+            // link
             step.AddSuccessor(nextStep);
             nextStep.AddPredecessor(step);
         }
@@ -110,12 +121,13 @@ public sealed class Process
         return step;
     }
 
+    /// <summary>searches an existing step with the node and state</summary>
     private Step FindStep(int node, State state, List<Step> steps)
     {
         foreach (var step in steps)
         {
             if (step.node != node) continue;
-            if (step.state.CompareTo(state) != 0) continue;
+            if (!step.state.Equals(state)) continue;
             return step;
         }
         return null;
@@ -127,7 +139,7 @@ public sealed class Process
 
         foreach (var transition in transitions)
         {
-            writer.WriteLine($"n{transition.source} -> n{transition.target} [label=\"{transition.script}\"];");
+            writer.WriteLine("n{0} -> n{1} [label=\"{2}\"];", transition.source, transition.target, transition.script);
         }
 
         writer.WriteLine("}");

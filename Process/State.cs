@@ -1,7 +1,9 @@
 ﻿using System;
 
-public sealed class State : IComparable<State>
+/// <summary>a state is a collection of variables that can only be <c>true</c> or <c>false</c></summary>
+public sealed class State : IEquatable<State>
 {
+    /// <summary>variable values</summary>
     private readonly bool[] values;
 
     public int numValues { get { return values.Length; } }
@@ -16,25 +18,24 @@ public sealed class State : IComparable<State>
         this.values = (bool[])state.values.Clone();
     }
 
-    public bool Get(int id)
+    public bool Get(int variableId)
     {
-        return values[id];
+        return values[variableId];
     }
 
-    public void Set(int id, bool value)
+    public void Set(int variableId, bool value)
     {
-        values[id] = value;
+        values[variableId] = value;
     }
 
-    public int CompareTo(State other)
+    public bool Equals(State other)
     {
         for (int i = 0; i < numValues; i++)
         {
             var a = values[i];
             var b = other.values[i];
-            var cmp = a.CompareTo(b);
-            if (cmp != 0) return cmp;
+            if (a != b) return false;
         }
-        return 0;
+        return true;
     }
 }

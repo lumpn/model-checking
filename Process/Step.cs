@@ -6,8 +6,11 @@ public sealed class Step
     public readonly int node;
     public readonly State state;
 
-    public readonly List<Step> successors = new List<Step>();
-    public readonly List<Step> predecessors = new List<Step>();
+    private readonly List<Step> successors = new List<Step>();
+    private readonly List<Step> predecessors = new List<Step>();
+
+    public IEnumerable<Step> Successors => successors;
+    public IEnumerable<Step> Predecessors => predecessors;
 
     public Step(int id, int node, State state)
     {
