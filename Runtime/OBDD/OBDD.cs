@@ -26,7 +26,7 @@ public sealed class OBDD
     /// <summary>restricts a BDD by assigning a value to a variable</summary>
     public BDDNode Restrict(BDDNode node, int variableId, bool variableValue)
     {
-        if (node.index > variableId)
+        if (node.index < 0 || node.index > variableId)
         {
             // our node and all our children do not contain the variable
             return node;
@@ -77,6 +77,11 @@ public sealed class OBDD
     public BDDNode MakeOr(BDDNode a, BDDNode b)
     {
         return MakeIfThenElse(a, BDDNode.True, b);
+    }
+
+    public BDDNode MakeNot(BDDNode node)
+    {
+        return MakeIfThenElse(node, BDDNode.False, BDDNode.True);
     }
 
     private static int Min(int a, int b, int c)
