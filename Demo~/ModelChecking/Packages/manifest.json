@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "com.unity.ide.monodevelop": "file:../../../../com.unity.ide.monodevelop",
+    "com.unity.test-framework": "1.1.24",
+    "de.lumpn.unity-modelchecking": "file:../../../"
+  }
+}
