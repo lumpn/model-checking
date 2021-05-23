@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -96,9 +97,38 @@ public sealed class OBDDTest
     }
 
     [Test]
+    public void AddTransition()
+    {
+        const int numBits = 3;
+        var obdd = new OBDD();
+        var root = AddTransition(obdd, 0, 1, numBits);
+
+        // example i = 0, j = 1, numBits = 3
+        // binary i = 000, j = 001
+        // interleave j2 i2 j1 i1 j0 i0
+        //            0  0  0  0  1  0
+        // variables  5  4  3  2  1  0
+
+        using (var writer = new StringWriter())
+        {
+            root.ExportToGraphviz(writer);
+            Debug.Log(writer);
+        }
+
+        using (var writer = new StringWriter())
+        {
+            obdd.ExportToGraphviz(writer);
+            Debug.Log(writer);
+        }
+    }
+
+    [Test]
     public void TransitionSystem()
     {
         const int numNodes = 7;
+        const int numBits = 3;
+        Assert.Less(numNodes, 1 << (numBits + 1));
+
         var ts = new TransitionSystem(numNodes);
         ts.AddTransition(0, 1);
         ts.AddTransition(0, 2);
@@ -113,65 +143,66 @@ public sealed class OBDDTest
         ts.AddTransition(6, 6);
 
         var obdd = new OBDD();
+        var root = BDDNode.False;
 
         for (int i = 0; i < numNodes; i++)
         {
             for (int j = 0; j < numNodes; j++)
             {
                 if (!ts.HasTransition(i, j)) continue;
-                AddTransition(obdd, i, j);
+                var transition = AddTransition(obdd, i, j, numBits);
+                root = obdd.MakeOr(root, transition);
             }
         }
-    }
 
-    [Test]
-    public void AddTransition()
-    {
-        const int numNodes = 7;
-        var ts = new TransitionSystem(numNodes);
+        using (var writer = new StringWriter())
+        {
+            ts.ExportToGraphviz(writer, new IProposition[0]);
+            Debug.Log(writer);
+        }
+
+        using (var writer = new StringWriter())
+        {
+            root.ExportToGraphviz(writer);
+            Debug.Log(writer);
+        }
+
+        using (var writer = new StringWriter())
+        {
+            obdd.ExportToGraphviz(writer);
+            Debug.Log(writer);
+        }
     }
 
     private static BDDNode AddTransition(OBDD obdd, int i, int j, int numBits)
     {
-        // example i = 4, j = 3, numBits = 4
-        // binary i = 0100, j = 0011
-        // interleave 00100101
+        var node = BDDNode.True;
+        node = AddTransition(obdd, node, i, numBits, 0);
+        node = AddTransition(obdd, node, j, numBits, 1);
+        return node;
+    }
 
-        BDDNode prev = BDDNode.True;
-
-        
-        int bit = 0;
-        while (j > 0)
+    private static BDDNode AddTransition(OBDD obdd, BDDNode node, int index, int numBits, int offset)
+    {
+        for (int i = 0; i < numBits; i++)
         {
-            bool value = (j & 1) == 1;
+            int literal = i * 2 + offset;
+            var variable = obdd.MakeLiteral(literal);
 
-            var node = obdd.MakeLiteral(bit);
-            if (!value)
+            bool hasBit = (index & (1 << i)) != 0;
+            if (!hasBit)
             {
-                node = obdd.MakeNot(node);
+                variable = obdd.MakeNot(variable);
             }
 
-            prev = obdd.MakeAnd(prev, node);
-            bit += 2;
-            j >>= 1;
+            node = obdd.MakeAnd(node, variable);
         }
 
-        bit = 1;
-        while (i > 0)
-        {
-            bool value = (i & 1) == 1;
+        return node;
+    }
 
-            var node = obdd.MakeLiteral(bit);
-            if (!value)
-            {
-                node = obdd.MakeNot(node);
-            }
-
-            prev = obdd.MakeAnd(prev, node);
-            bit += 2;
-            i >>= 1;
-        }
-
-        return prev;
+    private static bool HasFlag(int a, int b)
+    {
+        return (a & b) == b;
     }
 }

@@ -71,6 +71,25 @@ public sealed class OBDD
         return MakeNode(splitId, high, low);
     }
 
+
+    public void ExportToGraphviz(TextWriter writer)
+    {
+        writer.WriteLine("digraph G {");
+
+        writer.WriteLine("n{0} [label=\"true\"];", BDDNode.True.id);
+        writer.WriteLine("n{0} [label=\"false\"];", BDDNode.False.id);
+
+        foreach (var node in nodes)
+        {
+            writer.WriteLine("n{0} [label=\"{1}\"];", node.id, node.variableId);
+            writer.WriteLine("n{0} -> n{1};", node.id, node.high.id);
+            writer.WriteLine("n{0} -> n{1} [style=dashed];", node.id, node.low.id);
+        }
+
+        writer.WriteLine("}");
+    }
+
+
     private static int Min(int a, int b, int c)
     {
         return Math.Min(Math.Min(a, b), c);
