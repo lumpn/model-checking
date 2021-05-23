@@ -94,4 +94,84 @@ public sealed class OBDDTest
             Debug.Log(writer);
         }
     }
+
+    [Test]
+    public void TransitionSystem()
+    {
+        const int numNodes = 7;
+        var ts = new TransitionSystem(numNodes);
+        ts.AddTransition(0, 1);
+        ts.AddTransition(0, 2);
+        ts.AddTransition(1, 3);
+        ts.AddTransition(2, 4);
+        ts.AddTransition(3, 3);
+        ts.AddTransition(3, 5);
+        ts.AddTransition(4, 4);
+        ts.AddTransition(4, 5);
+        ts.AddTransition(5, 5);
+        ts.AddTransition(5, 6);
+        ts.AddTransition(6, 6);
+
+        var obdd = new OBDD();
+
+        for (int i = 0; i < numNodes; i++)
+        {
+            for (int j = 0; j < numNodes; j++)
+            {
+                if (!ts.HasTransition(i, j)) continue;
+                AddTransition(obdd, i, j);
+            }
+        }
+    }
+
+    [Test]
+    public void AddTransition()
+    {
+        const int numNodes = 7;
+        var ts = new TransitionSystem(numNodes);
+    }
+
+    private static BDDNode AddTransition(OBDD obdd, int i, int j, int numBits)
+    {
+        // example i = 4, j = 3, numBits = 4
+        // binary i = 0100, j = 0011
+        // interleave 00100101
+
+        BDDNode prev = BDDNode.True;
+
+        
+        int bit = 0;
+        while (j > 0)
+        {
+            bool value = (j & 1) == 1;
+
+            var node = obdd.MakeLiteral(bit);
+            if (!value)
+            {
+                node = obdd.MakeNot(node);
+            }
+
+            prev = obdd.MakeAnd(prev, node);
+            bit += 2;
+            j >>= 1;
+        }
+
+        bit = 1;
+        while (i > 0)
+        {
+            bool value = (i & 1) == 1;
+
+            var node = obdd.MakeLiteral(bit);
+            if (!value)
+            {
+                node = obdd.MakeNot(node);
+            }
+
+            prev = obdd.MakeAnd(prev, node);
+            bit += 2;
+            i >>= 1;
+        }
+
+        return prev;
+    }
 }
