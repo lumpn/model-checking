@@ -46,8 +46,8 @@ public sealed class BDDNode
             if (!exported.Add(node)) continue;
 
             writer.WriteLine("n{0} [label=\"{1}\"];", node.id, node.variableId);
-            writer.WriteLine("n{0} -> n{1} [color=green];", node.id, node.high.id);
-            writer.WriteLine("n{0} -> n{1} [color=red];", node.id, node.low.id);
+            writer.WriteLine("n{0} -> n{1};", node.id, node.high.id);
+            writer.WriteLine("n{0} -> n{1} [style=dashed];", node.id, node.low.id);
 
             stack.Push(node.high);
             stack.Push(node.low);
